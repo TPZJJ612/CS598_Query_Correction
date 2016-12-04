@@ -131,11 +131,12 @@ def split1(word):
     res = list()
     splits     = [(word[:i], word[i:])    for i in range(1, len(word) + 1)]
     for L, R in splits:
-        if len(L) > 0 and L in WORDS and len(R) > 0 and R in WORDS:
+        a = L+","+R
+        if len(L) > 0 and L in WORDS and len(R) > 0 and R in WORDS and a in bigram:
             valid = list()
             valid.append(L)
             valid.append(R)
-            res.append(valid)
+            res.append((valid, bigram[a]))
     return res
     
 def split2(word):
@@ -146,12 +147,15 @@ def split2(word):
             L = word[:i]
             M = word[i:j]
             R = word[j:]
+            a = L+","+M
+            b = M+","+R
             if len(L) > 0 and L in WORDS and len(M) > 0 and M in WORDS and len(R) > 0 and R in WORDS:
-                valid = list()
-                valid.append(L)
-                valid.append(M)
-                valid.append(R)
-                res.append(valid)
+                if a in bigram and b in bigram:
+                    valid = list()
+                    valid.append(L)
+                    valid.append(M)
+                    valid.append(R)
+                    res.append((valid, bigram[a]+bigram[b]))
     return res
 
 
@@ -216,7 +220,6 @@ def correct(words, k):
     length = len(words)
     topk = list()
     for i in range(length):
-        newtopk = list()
         splitCandidates = split(words[i])
         transCandidates = gcandidate(words[i])
         merge = words[i]
@@ -226,43 +229,52 @@ def correct(words, k):
             if merge in WORDS and i == 0:
                 sublist = list()
                 sublist.append(merge)
-                newtopk.append((sublist, 0.9))
+                topk.append((sublist, 0.9*(j-i+1), j+1))
             elif merge in WORDS:
+                newtopk = list()
                 for tups in topk:
-                    ke = tups[0][-1]+","+merge
-                    if ke in bigram:
-                        tupcpy = deepcopy(tups)
-                        tupcpy[0].append(merge)
-                        tupcpy[1] += bigram[ke]*(j-i)
-                        newtopk.append(tupcpy)
+                    if tups[2] == i:
+                        ke = tups[0][-1]+","+merge
+                        if ke in bigram:
+                            tupcpy = deepcopy(tups)
+                            tupcpy[0].append(merge)
+                            tupcpy[1] += bigram[ke]*(j-i)
+                            newtopk.append((tupcpy[0], tupcpy[1], j+1))
+                topk += newtopk
         #check splits and transformation
         for splitc in splitCandidates:
             if i == 0:
-                newtopk.append((splitc, 0.01))
+                topk.append((splitc[0], splitc[1], i+1))
             else:
+                newtopk = list()
                 for tups in topk:
-                    ls = tups[0]
-                    ke = ls[-1]+","+splitc[0]
-                    if ke in bigram:
-                        tupcpy = copy.deepcopy(tups)
-                        newtopk.append((tupcpy[0]+splitc, tupcpy[1]+bigram[ke]))
+                    if tups[2] == i:
+                        ls = tups[0]
+                        ke = ls[-1]+","+splitc[0][0]
+                        if ke in bigram:
+                            tupcpy = copy.deepcopy(tups)
+                            newtopk.append((tupcpy[0]+splitc[0], tupcpy[1]+bigram[ke]+splitc[1], i+1))
+                topk += newtopk
         for trans in transCandidates:
             if i == 0:
                 sublist = list()
                 sublist.append(trans[0])
-                newtopk.append((sublist, trans[1]))
+                topk.append((sublist, trans[1], i+1))
             else:
+                newtopk = list()
                 for tups in topk:
-                    ls = tups[0]
-                    ke = ls[-1]+","+trans[0]
-                    if ke in bigram:
-                        tupcpy = copy.deepcopy(tups)
-                        tupcpy[0].append(trans[0])
-                        newtopk.append((tupcpy[0], tupcpy[1]+bigram[ke]+trans[1]))
+                    if tups[2] == i:
+                        ls = tups[0]
+                        ke = ls[-1]+","+trans[0]
+                        if ke in bigram:
+                            tupcpy = copy.deepcopy(tups)
+                            tupcpy[0].append(trans[0])
+                            newtopk.append((tupcpy[0], tupcpy[1]+bigram[ke]+trans[1], i+1))
+                topk += newtopk
                         
-                        
-        newtopk = sorted(newtopk, reverse = True, key=getKey)
-        topk = copy.deepcopy(newtopk[:k])
+        topk = sorted(topk, reverse = True, key=getKey)
+        topk = list(a for a in topk if a[2] > i)
+        topk = copy.deepcopy(topk[:k])
         
     return topk
        
