@@ -37,14 +37,15 @@ def precision_recall(queries, corrections, threshold):
             continue
 
         corrected_query = ' '.join(results[0][0])
+        ground_truth = corrections[i]
 
-        if corrected_query == query:
-            if corrections[i] == corrected_query:
+        if query == ground_truth:
+            if corrected_query == query:
                 true_positive += 1
             else:
                 false_negative += 1
         else:
-            if corrections[i] == corrected_query:
+            if corrected_query != query:
                 true_negative += 1
             else:
                 false_positive += 1
@@ -92,8 +93,8 @@ def correction_test(queries, corrections, threshold):
 if __name__ == "__main__":
     queries, corrections = load_dataset()
 
-    # true_positive, true_negative, false_positive, false_negative = precision_recall(queries, corrections, 10000)
-    # print (true_positive, true_negative, false_positive, false_negative)
-
-    top1, top5, top10, count = correction_test(queries, corrections, 10000)
-    print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)
+    true_positive, true_negative, false_positive, false_negative = precision_recall(queries, corrections, 10000)
+    print (true_positive, true_negative, false_positive, false_negative)
+    #
+    # top1, top5, top10, count = correction_test(queries, corrections, 10000)
+    # print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)
