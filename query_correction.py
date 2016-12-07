@@ -234,13 +234,11 @@ class QueryChecker:
                             if ke in self.bigram:
                                 tupcpy = copy.deepcopy(tups)
                                 tupcpy[0].append(merge)
-                                tupcpy[1] += self.bigram[ke]*(j-i)
-                                newtopk.append((tupcpy[0], tupcpy[1], j+1))
+                                newtopk.append((tupcpy[0], tupcpy[1] + self.bigram[ke]*(j-i), j+1))
                             else:
                                 tupcpy = copy.deepcopy(tups)
                                 tupcpy[0].append(merge)
-                                tupcpy[1] += 0.0001 * (j - i)
-                                newtopk.append((tupcpy[0], tupcpy[1], j + 1))
+                                newtopk.append((tupcpy[0], 0.0001 * (j - i) + tupcpy[1], j + 1))
                     topk += newtopk
 
             # check splits and transformation
