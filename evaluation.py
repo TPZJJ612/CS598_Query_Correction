@@ -72,6 +72,9 @@ def correction_test(queries, corrections, threshold):
             if not results:
                 continue
 
+            if k == 1:
+                count += 1
+
             corrected_queries = []
             for result in results:
                 corrected_queries.append(' '.join(result[0]))
@@ -79,7 +82,6 @@ def correction_test(queries, corrections, threshold):
             if corrections[i] in corrected_queries:
                 if k == 1:
                     top1 += 1
-                    count += 1
                 elif k == 5:
                     top5 += 1
                 else:
