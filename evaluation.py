@@ -18,7 +18,7 @@ def load_dataset():
     return queries, corrections
 
 
-def test(queries, corrections, threshold):
+def precision_recall(queries, corrections, threshold):
     qc = query_correction.QueryChecker()
     true_positive = 0
     true_negative = 0
@@ -51,7 +51,47 @@ def test(queries, corrections, threshold):
 
     return true_positive, true_negative, false_positive, false_negative
 
+
+def correction_test(queries, corrections, threshold):
+    qc = query_correction.QueryChecker()
+    top1 = 0
+    top5 = 0
+    top10 = 0
+    count = 0
+
+    for i, query in enumerate(queries):
+        if i >= threshold:
+            break
+        if i % 50 == 0:
+            print ('Finished ', i)
+            print (top1, top5, top10, count)
+        words = query.split(" ")
+
+        count += 1
+        for k in [1, 5, 10]:
+            results = qc.correct(words, k)
+            if not results:
+                continue
+
+            corrected_queries = []
+            for result in results:
+                corrected_queries.append(' '.join(result[0]))
+
+            if corrections[i] in corrected_queries:
+                if k == 1:
+                    top1 +=1
+                elif k == 5:
+                    top5 += 1
+                else:
+                    top10 += 1
+
+    return top1, top5, top10, count
+
 if __name__ == "__main__":
     queries, corrections = load_dataset()
-    true_positive, true_negative, false_positive, false_negative = test(queries, corrections, 10000)
-    print (true_positive, true_negative, false_positive, false_negative)
+
+    # true_positive, true_negative, false_positive, false_negative = precision_recall(queries, corrections, 10000)
+    # print (true_positive, true_negative, false_positive, false_negative)
+
+    top1, top5, top10, count = correction_test(queries, corrections, 10000)
+    print (top1, top5, top10, count)
