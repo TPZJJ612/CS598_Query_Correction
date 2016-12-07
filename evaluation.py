@@ -64,10 +64,9 @@ def correction_test(queries, corrections, threshold):
             break
         if i % 50 == 0:
             print ('Finished ', i)
-            print (top1, top5, top10, count)
+            print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)
         words = query.split(" ")
 
-        count += 1
         for k in [1, 5, 10]:
             results = qc.correct(words, k)
             if not results:
@@ -79,7 +78,8 @@ def correction_test(queries, corrections, threshold):
 
             if corrections[i] in corrected_queries:
                 if k == 1:
-                    top1 +=1
+                    top1 += 1
+                    count += 1
                 elif k == 5:
                     top5 += 1
                 else:
@@ -94,4 +94,4 @@ if __name__ == "__main__":
     # print (true_positive, true_negative, false_positive, false_negative)
 
     top1, top5, top10, count = correction_test(queries, corrections, 10000)
-    print (top1, top5, top10, count)
+    print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)
