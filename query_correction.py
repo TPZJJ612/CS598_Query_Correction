@@ -166,7 +166,7 @@ class QueryChecker:
         vis = set()
         curr = ""
         self.backtrack(word, 0, res, 1, 2, curr, vis)
-        sorted(res, reverse = True, key=lambda item: item[1])
+        res = sorted(res, reverse = True, key=lambda item: item[1])
         return res[:10]
 
     def backtrack(self, word, lens, res, score, edit, curr, vis):
@@ -232,10 +232,15 @@ class QueryChecker:
                         if tups[2] == i:
                             ke = tups[0][-1]+","+merge
                             if ke in self.bigram:
-                                tupcpy = deepcopy(tups)
+                                tupcpy = copy.deepcopy(tups)
                                 tupcpy[0].append(merge)
                                 tupcpy[1] += self.bigram[ke]*(j-i)
                                 newtopk.append((tupcpy[0], tupcpy[1], j+1))
+                            else:
+                                tupcpy = copy.deepcopy(tups)
+                                tupcpy[0].append(merge)
+                                tupcpy[1] += 0.0001 * (j - i)
+                                newtopk.append((tupcpy[0], tupcpy[1], j + 1))
                     topk += newtopk
 
             # check splits and transformation
@@ -251,6 +256,9 @@ class QueryChecker:
                             if ke in self.bigram:
                                 tupcpy = copy.deepcopy(tups)
                                 newtopk.append((tupcpy[0]+splitc[0], tupcpy[1]+self.bigram[ke]+splitc[1], i+1))
+                            else:
+                                tupcpy = copy.deepcopy(tups)
+                                newtopk.append((tupcpy[0] + splitc[0], tupcpy[1] + 0.0001 + splitc[1], i + 1))
                     topk += newtopk
             for trans in trans_candidates:
                 if i == 0:
@@ -267,8 +275,11 @@ class QueryChecker:
                                 tupcpy = copy.deepcopy(tups)
                                 tupcpy[0].append(trans[0])
                                 newtopk.append((tupcpy[0], tupcpy[1]+self.bigram[ke]+trans[1], i+1))
+                            else:
+                                tupcpy = copy.deepcopy(tups)
+                                tupcpy[0].append(trans[0])
+                                newtopk.append((tupcpy[0], tupcpy[1] + 0.0001 + trans[1], i + 1))
                     topk += newtopk
-
             topk = sorted(topk, reverse = True, key=lambda item: item[1])
             topk = list(a for a in topk if a[2] > i)
             topk = copy.deepcopy(topk[:k])
@@ -276,6 +287,7 @@ class QueryChecker:
         return topk
 
 if __name__ == "__main__":
-    query = 'home page of illinoisstate'
+    # query = 'home page of illinoisstate'
+    query = 'who is the american president'
     queryChecker = QueryChecker()
-    print (queryChecker.correct(query.split(" "), 1))
+    print (queryChecker.correct(query.split(" "), 7))
