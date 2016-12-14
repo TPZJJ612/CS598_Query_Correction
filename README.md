@@ -11,14 +11,13 @@ Python 3.3 should be used to run the module
 
 Parameters you need:
 
-key: the subscription key
-
-query: the query you want to correct
-
-k: how many corrections you want 
+* key: the subscription key
+* query: the query you want to correct
+* k: how many corrections you want 
 
 Example uses:
 
+    python  //opens python interpreter
     > key = 'ABCVJFIJDFOAJDF'
     > query = 'goverment home page of illinoisstate'
     > k = 7
