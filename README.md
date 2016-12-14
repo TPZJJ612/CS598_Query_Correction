@@ -27,5 +27,5 @@ Example uses:
     
 Demo uses:
 
-    python userdemo.py
+    python user_demo.py
 
