@@ -28,4 +28,8 @@ Example uses:
 Demo uses:
 
     python user_demo.py
+    
+Evaluation: (combinedQueries.txt is required)
+
+    python evaluation.py
 
