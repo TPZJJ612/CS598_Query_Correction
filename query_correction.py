@@ -1,9 +1,13 @@
-import copy
+import copy, http.client, urllib.request, urllib.parse, urllib.error, base64, requests, json
+from collections import OrderedDict
 
 
 class QueryChecker:
     WORDS = set(line.strip() for line in open('words.txt'))
-
+    headers = {'Content-Type': 'application/json','Ocp-Apim-Subscription-Key': '532b2cec37b643ce877268b4833da367'}
+    params = urllib.parse.urlencode({'model': 'body','order': 5})
+    
+    conn = http.client.HTTPSConnection('api.projectoxford.ai')
     def __init__(self):
         self.substitution = {}
         self.reversal = {}
@@ -12,11 +16,14 @@ class QueryChecker:
         self.bigram = {}
         self.setup()
 
+    def __del__(self):
+        self.conn.close()
+        
     def setup(self):
-        with open ('bigrams', 'r') as f:
-            for line in f:
-                vals = line.split('@@')
-                self.bigram[vals[0]] = float(vals[1])
+#        with open ('bigrams', 'r') as f:
+#            for line in f:
+#                vals = line.split('@@')
+#                self.bigram[vals[0]] = float(vals[1])
 
         self.substitution["a"] = {"a":0, "b":0, "c":0.0115, "d":0.0016, "e":0.5607, "f":0, "g":0, "h":0.0033, "i":0.1934, "j":0, "k":0.0016, "l":0, "m":0, "n":0.0049, "o":0.1246, "p":0, "q":0, "r":0.0016, "s":0.0574, "t":0.0148, "u":0.0148, "v":0, "w":0.0016, "x":0, "y":0.0082, "z":0}
         self.substitution["b"] = {"a":0, "b":0, "c":0.1324, "d":0.1324, "e":0.0294, "f":0.0294, "g":0.0441, "h":0.0147, "i":0, "j":0, "k":0, "l":0.0735, "m":0.1618, "n":0.0735, "o":0, "p":0.1471, "q":0, "r":0, "s":0.0294, "t":0.0147, "u":0, "v":0, "w":0.1176, "x":0, "y":0, "z":0}
@@ -128,41 +135,45 @@ class QueryChecker:
         self.deletion["z"] = {"a":0.1000, "b":0, "c":0, "d":0, "e":0.2500, "f":0.0500, "g":0, "h":0, "i":0.3000, "j":0, "k":0, "l":0, "m":0, "n":0, "o":0, "p":0, "q":0, "r":0, "s":0, "t":0, "u":0, "v":0, "w":0, "x":0, "y":0.1000, "z":0.2000}
         self.deletion["@"] = {"a":0.2072, "b":0.0360, "c":0.0405, "d":0.0360, "e":0.1171, "f":0.0495, "g":0.0631, "h":0.0135, "i":0.0225, "j":0.0045, "k":0.0766, "l":0.0225, "m":0.0270, "n":0.0090, "o":0.0090, "p":0.0450, "q":0, "r":0.0270, "s":0.1036, "t":0.0090, "u":0.0495, "v":0.0045, "w":0.0090, "x":0.0045, "y":0.0045, "z":0.0090}
 
-    def split(self, word):
-        return self.split1(word) + self.split2(word)
-
-    def split1(self, word):
-        res = list()
-        splits = [(word[:i], word[i:]) for i in range(1, len(word) + 1)]
-        for L, R in splits:
-            a = L+","+R
-            if len(L) > 0 and L in self.WORDS and len(R) > 0 and R in self.WORDS and a in self.bigram:
-                valid = list()
-                valid.append(L)
-                valid.append(R)
-                res.append((valid, self.bigram[a]))
-        return res
-
-    def split2(self, word):
-        res = list()
-        for i in range(len(word)+1):
-            for j in range(len(word)+1-i):
-                L = word[:i]
-                M = word[i:j]
-                R = word[j:]
-                a = L+","+M
-                b = M+","+R
-                if len(L) > 0 and L in self.WORDS and len(M) > 0 and M in self.WORDS and len(R) > 0 and R in self.WORDS:
-                    if a in self.bigram and b in self.bigram:
-                        valid = list()
-                        valid.append(L)
-                        valid.append(M)
-                        valid.append(R)
-                        res.append((valid, self.bigram[a]+self.bigram[b]))
-        return res
+#    def split(self, word):
+#        res = sorted(self.split1(word) + self.split2(word), reverse = True, key=lambda item: item[1])
+#        return res
+#
+#    def split1(self, word):
+#        res = list()
+#        splits = [(word[:i], word[i:]) for i in range(1, len(word) + 1)]
+#        for L, R in splits:
+#            a = L+","+R
+#            if len(L) > 0 and L in self.WORDS and len(R) > 0 and R in self.WORDS and a in self.bigram:
+#                valid = list()
+#                valid.append(L)
+#                valid.append(R)
+#                res.append((valid, self.bigram[a]))
+#        return res
+#
+#    def split2(self, word):
+#        res = list()
+#        for i in range(len(word)+1):
+#            for j in range(len(word)+1-i):
+#                L = word[:i]
+#                M = word[i:j]
+#                R = word[j:]
+#                a = L+","+M
+#                b = M+","+R
+#                if len(L) > 0 and L in self.WORDS and len(M) > 0 and M in self.WORDS and len(R) > 0 and R in self.WORDS:
+#                    if a in self.bigram and b in self.bigram:
+#                        valid = list()
+#                        valid.append(L)
+#                        valid.append(M)
+#                        valid.append(R)
+#                        res.append((valid, self.bigram[a]+self.bigram[b]))
+#        return res
 
     def gcandidate(self, word):
         res = list()
+        if word.isdigit():
+            res.append((word, 1))
+            return res
         vis = set()
         curr = ""
         self.backtrack(word, 0, res, 1, 2, curr, vis)
@@ -216,76 +227,103 @@ class QueryChecker:
         length = len(words)
         topk = list()
         for i in range(length):
-            split_candidates = self.split(words[i])
+#            split_candidates = self.split(words[i])
+            split_candidates = self.getsplit(words[i])
             trans_candidates = self.gcandidate(words[i])
             merge = words[i]
             #check if we can merge couple words together
+            queries = list()
             for j in range(i+1, length):
                 merge += words[j]
                 if merge in self.WORDS and i == 0:
-                    sublist = list()
-                    sublist.append(merge)
-                    topk.append((sublist, 0.9*(j-i+1), j+1))
+                    topk.append(dict(sent = merge, prob = 0.9*(j-i+1), next = j+1, last = merge, res = merge))
                 elif merge in self.WORDS:
-                    newtopk = list()
                     for tups in topk:
-                        if tups[2] == i:
-                            ke = tups[0][-1]+","+merge
-                            if ke in self.bigram:
-                                tupcpy = copy.deepcopy(tups)
-                                tupcpy[0].append(merge)
-                                newtopk.append((tupcpy[0], tupcpy[1] + self.bigram[ke]*(j-i), j+1))
-                            else:
-                                tupcpy = copy.deepcopy(tups)
-                                tupcpy[0].append(merge)
-                                newtopk.append((tupcpy[0], 0.0001 * (j - i) + tupcpy[1], j + 1))
-                    topk += newtopk
-
+                        if tups['next'] == i:
+                            queries.append(dict(sent = tups['res'], prob = (tups['prob']+0.95*(j-i+1)), next = j+1, last = merge, res = (tups['res']+" "+merge)))
+#                            if ke in self.bigram:
+#                                tupcpy = copy.deepcopy(tups)
+#                                tupcpy[0].append(merge)
+#                                newtopk.append((tupcpy[0], tupcpy[1] + self.bigram[ke]+ 0.95*(j-i+1), j+1, tupcpy[3]+" "+merge))
+#                            else:
+#                                tupcpy = copy.deepcopy(tups)
+#                                tupcpy[0].append(merge)
+#                                newtopk.append((tupcpy[0], 0.0001 * (j - i +1) + tupcpy[1], j + 1, tupcpy[3]+" "+merge))
+            
             # check splits and transformation
             for splitc in split_candidates:
                 if i == 0:
-                    topk.append((splitc[0], splitc[1], i+1))
+                    topk.append(dict(sent = " ".join(splitc[0]), prob = splitc[1], next = i+1, last = splitc[0][-1], res = " ".join(splitc[0])))
                 else:
-                    newtopk = list()
                     for tups in topk:
-                        if tups[2] == i:
-                            ls = tups[0]
-                            ke = ls[-1]+","+splitc[0][0]
-                            if ke in self.bigram:
-                                tupcpy = copy.deepcopy(tups)
-                                newtopk.append((tupcpy[0]+splitc[0], tupcpy[1]+self.bigram[ke]+splitc[1], i+1))
-                            else:
-                                tupcpy = copy.deepcopy(tups)
-                                newtopk.append((tupcpy[0] + splitc[0], tupcpy[1] + 0.0001 + splitc[1], i + 1))
-                    topk += newtopk
+                        if tups['next'] == i:
+                            queries.append(dict(sent = (tups['res']+" "+" ".join(splitc[0][:-1])), prob = (tups['prob']+splitc[1]), next = i+1, last = splitc[-1], res = (tups['res']+" "+" ".join(splitc[0]))))
+                            
+#                            if ke in self.bigram:
+#                                tupcpy = copy.deepcopy(tups)
+#                                newtopk.append((tupcpy[0]+splitc[0], tupcpy[1]+self.bigram[ke]+splitc[1], i+1, tupcpy[3]+" "+" ".join(splitc[0])))
+#                            else:
+#                                tupcpy = copy.deepcopy(tups)
+#                                newtopk.append((tupcpy[0] + splitc[0], tupcpy[1] + 0.0001 + splitc[1], i+1, tupcpy[3]+" "+" ".join(splitc[0])))
             for trans in trans_candidates:
-                if i == 0:
-                    sublist = list()
-                    sublist.append(trans[0])
-                    topk.append((sublist, trans[1], i+1))
-                else:
-                    newtopk = list()
+                if i == 0 and trans[0] != '':
+                    topk.append(dict(sent = trans[0], prob = trans[1], next = i+1, last = trans[0], res = trans[0]))
+                elif trans[0] != '':
                     for tups in topk:
-                        if tups[2] == i:
-                            ls = tups[0]
-                            ke = ls[-1]+ ',' +trans[0]
-                            if ke in self.bigram:
-                                tupcpy = copy.deepcopy(tups)
-                                tupcpy[0].append(trans[0])
-                                newtopk.append((tupcpy[0], tupcpy[1]+self.bigram[ke]+trans[1], i+1))
-                            else:
-                                tupcpy = copy.deepcopy(tups)
-                                tupcpy[0].append(trans[0])
-                                newtopk.append((tupcpy[0], tupcpy[1] + 0.0001 + trans[1], i + 1))
-                    topk += newtopk
-            topk = sorted(topk, reverse = True, key=lambda item: item[1])
-            topk = list(a for a in topk if a[2] > i)
-            topk = copy.deepcopy(topk[:k])
-
+                        if tups['next'] == i:
+                            queries.append(dict(sent = tups['res'], prob = (tups['prob']+trans[1]), next = i+1, last = trans[0], res = (tups['res']+" "+trans[0])))
+#                            if ke in self.bigram:
+#                                tupcpy = copy.deepcopy(tups)
+#                                tupcpy[0].append(trans[0])
+#                                newtopk.append((tupcpy[0], tupcpy[1]+self.bigram[ke]+trans[1], i+1, tupcpy[3]+" "+trans[0]))
+#                            else:
+#                                tupcpy = copy.deepcopy(tups)
+#                                tupcpy[0].append(trans[0])
+#                                newtopk.append((tupcpy[0], tupcpy[1] + 0.0001 + trans[1], i+1, tupcpy[3]+" "+trans[0]))
+            if len(queries) > 0:
+                topk += self.getbigram(queries)
+            topk = sorted(topk, reverse = True, key=lambda item: item['prob'])
+            topk = list(a for a in topk if a['next'] > i)[:k]
         return topk
+        
+    def getbigram(self, queries):
+        dic = OrderedDict({'queries' : [{'words': query['sent'], 'word': query['last']} for query in queries]})
+        data = json.dumps(dic)
+        try:            
+            self.conn.request("POST", "/text/weblm/v1.0/calculateConditionalProbability?%s" % self.params, data, self.headers)
+#            print(data)
+#            print(self.conn.getresponse().read().decode('utf8'))
+            response = json.loads(self.conn.getresponse().read().decode('utf8'))['results']
+            for i in range(len(response)):
+                queries[i]['prob'] = queries[i]['prob'] + 2**float(response[i]['probability'])           
+            return queries            
+        except Exception as e:
+            print("[Errno {0}] {1}".format(e.errno, e.strerror)) 
+            
+    def getsplit(self, text):
+        params2 = urllib.parse.urlencode({
+            # Request parameters
+            'model': 'body',
+            'text': text,
+            'order': 5,
+            'maxNumOfCandidatesReturned': 7,
+        })
+        try:
+            self.conn.request("POST", "/text/weblm/v1.0/breakIntoWords?%s" % params2, "{body}", self.headers)
+            response = json.loads(self.conn.getresponse().read().decode('utf8'))['candidates']
+            res = list()
+            for candi in response:
+                wds = candi['words'].split(' ')
+                if len(wds) > 1:
+                    res.append((wds, 2**float(candi['probability'])))
+            return res
+        except Exception as e:
+            print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
 if __name__ == "__main__":
-    # query = 'home page of illinoisstate'
-    query = 'who is the american president'
+    query = 'chester a arthur'
+#    query = 'how to speel challange'
     queryChecker = QueryChecker()
-    print (queryChecker.correct(query.split(" "), 7))
+    for tups in queryChecker.correct(query.split(" "), 7):
+        print(tups['res'], tups['prob'])
+    

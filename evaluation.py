@@ -36,7 +36,7 @@ def precision_recall(queries, corrections, threshold):
         if not results:
             continue
 
-        corrected_query = ' '.join(results[0][0])
+        corrected_query = ' '.join(results[0]['res'])
         ground_truth = corrections[i]
 
         if query == ground_truth:
@@ -67,9 +67,10 @@ def correction_test(queries, corrections, threshold):
             print ('Finished ', i)
             print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)
         words = query.split(" ")
-
+        
         for k in [1, 5, 10]:
             results = qc.correct(words, k)
+            print(query, results[0]['res'])
             if not results:
                 continue
 
@@ -78,7 +79,7 @@ def correction_test(queries, corrections, threshold):
 
             corrected_queries = []
             for result in results:
-                corrected_queries.append(' '.join(result[0]))
+                corrected_queries.append(result['res'])
 
             if corrections[i] in corrected_queries:
                 if k == 1:
@@ -92,9 +93,9 @@ def correction_test(queries, corrections, threshold):
 
 if __name__ == "__main__":
     queries, corrections = load_dataset()
-
-    true_positive, true_negative, false_positive, false_negative = precision_recall(queries, corrections, 10000)
-    print (true_positive, true_negative, false_positive, false_negative)
+#
+#    true_positive, true_negative, false_positive, false_negative = precision_recall(queries, corrections, 10000)
+#    print (true_positive, true_negative, false_positive, false_negative)
     #
-    # top1, top5, top10, count = correction_test(queries, corrections, 10000)
-    # print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)
+    top1, top5, top10, count = correction_test(queries, corrections, 10000)
+    print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)

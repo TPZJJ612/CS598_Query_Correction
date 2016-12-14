@@ -8,12 +8,8 @@ if __name__ == "__main__":
         query = input('Enter query: ')
         results = queryChecker.correct(query.split(' '), k)
 
-        corrected_queries = []
-        for result in results:
-            corrected_queries.append(' '.join(result[0]))
-
         print ('Corrections: ')
-        for i, correction in enumerate(corrected_queries):
-            print(i+1, ':',correction)
+        for i in range(len(results)):
+            print(i+1, ':',results[i]['res'])
 
 
