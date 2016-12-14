@@ -31,8 +31,7 @@ def precision_recall(queries, corrections, threshold):
         if i % 50 == 0:
             print ('Finished ', i)
             print (true_positive, true_negative, false_positive, false_negative)
-        words = query.split(" ")
-        results = qc.correct(words, 7)
+        results = qc.correct(query, 7)
         if not results:
             continue
 
@@ -66,10 +65,9 @@ def correction_test(queries, corrections, threshold):
         if i % 50 == 0:
             print ('Finished ', i)
             print ('top1:', top1, 'top5:', top5, 'top10:', top10, 'valid words:', count)
-        words = query.split(" ")
         
         for k in [1, 5, 10]:
-            corrected_queries = qc.correct(words, k)
+            corrected_queries = qc.correct(query, k)
             if not corrected_queries:
                 continue
 

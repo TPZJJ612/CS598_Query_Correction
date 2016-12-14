@@ -222,7 +222,8 @@ class QueryChecker:
                     if self.insertion[word[lens-1]][c] > 0:
                         self.backtrack(word, lens, res, score*self.insertion[word[lens-1]][c], edit-1, curr+c, vis)
 
-    def correct(self, words, k):
+    def correct(self, queryin, k):
+        words = queryin.split(" ")
         length = len(words)
         topk = list()
         for i in range(length):
@@ -323,9 +324,9 @@ class QueryChecker:
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
 if __name__ == "__main__":
-    query = 'chester a arthur'
+    query = 'goverment home page of illinoisstate'
 #    query = 'how to speel challange'
     queryChecker = QueryChecker('532b2cec37b643ce877268b4833da367')
-    for correction in queryChecker.correct(query.split(" "), 7):
+    for correction in queryChecker.correct(query, 7):
         print(correction)
     

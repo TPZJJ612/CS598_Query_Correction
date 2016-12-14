@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     while True:
         query = input('Enter query: ')
-        results = queryChecker.correct(query.split(' '), k)
+        results = queryChecker.correct(query, k)
 
         print ('Corrections: ')
         for i in range(len(results)):
