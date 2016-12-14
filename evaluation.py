@@ -19,7 +19,7 @@ def load_dataset():
 
 
 def precision_recall(queries, corrections, threshold):
-    qc = query_correction.QueryChecker()
+    qc = query_correction.QueryChecker('532b2cec37b643ce877268b4833da367')
     true_positive = 0
     true_negative = 0
     false_positive = 0
@@ -36,7 +36,7 @@ def precision_recall(queries, corrections, threshold):
         if not results:
             continue
 
-        corrected_query = ' '.join(results[0]['res'])
+        corrected_query = results[0]
         ground_truth = corrections[i]
 
         if query == ground_truth:
@@ -54,7 +54,7 @@ def precision_recall(queries, corrections, threshold):
 
 
 def correction_test(queries, corrections, threshold):
-    qc = query_correction.QueryChecker()
+    qc = query_correction.QueryChecker('532b2cec37b643ce877268b4833da367')
     top1 = 0
     top5 = 0
     top10 = 0
@@ -69,17 +69,12 @@ def correction_test(queries, corrections, threshold):
         words = query.split(" ")
         
         for k in [1, 5, 10]:
-            results = qc.correct(words, k)
-            print(query, results[0]['res'])
-            if not results:
+            corrected_queries = qc.correct(words, k)
+            if not corrected_queries:
                 continue
 
             if k == 1:
                 count += 1
-
-            corrected_queries = []
-            for result in results:
-                corrected_queries.append(result['res'])
 
             if corrections[i] in corrected_queries:
                 if k == 1:

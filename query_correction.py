@@ -3,17 +3,16 @@ from collections import OrderedDict
 
 
 class QueryChecker:
-    WORDS = set(line.strip() for line in open('words.txt'))
-    headers = {'Content-Type': 'application/json','Ocp-Apim-Subscription-Key': '532b2cec37b643ce877268b4833da367'}
-    params = urllib.parse.urlencode({'model': 'body','order': 5})
-    
-    conn = http.client.HTTPSConnection('api.projectoxford.ai')
-    def __init__(self):
+    def __init__(self, key):
         self.substitution = {}
         self.reversal = {}
         self.deletion = {}
         self.insertion = {}
         self.bigram = {}
+        self.WORDS = set(line.strip() for line in open('words.txt'))
+        self.headers = {'Content-Type': 'application/json','Ocp-Apim-Subscription-Key': key}
+        self.params = urllib.parse.urlencode({'model': 'body','order': 5})
+        self.conn = http.client.HTTPSConnection('api.projectoxford.ai')
         self.setup()
 
     def __del__(self):
@@ -284,7 +283,10 @@ class QueryChecker:
                 topk += self.getbigram(queries)
             topk = sorted(topk, reverse = True, key=lambda item: item['prob'])
             topk = list(a for a in topk if a['next'] > i)[:k]
-        return topk
+        res = list()
+        for r in topk:
+            res.append(r['res'])
+        return res
         
     def getbigram(self, queries):
         dic = OrderedDict({'queries' : [{'words': query['sent'], 'word': query['last']} for query in queries]})
@@ -323,7 +325,7 @@ class QueryChecker:
 if __name__ == "__main__":
     query = 'chester a arthur'
 #    query = 'how to speel challange'
-    queryChecker = QueryChecker()
-    for tups in queryChecker.correct(query.split(" "), 7):
-        print(tups['res'], tups['prob'])
+    queryChecker = QueryChecker('532b2cec37b643ce877268b4833da367')
+    for correction in queryChecker.correct(query.split(" "), 7):
+        print(correction)
     
